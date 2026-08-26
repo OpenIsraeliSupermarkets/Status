@@ -113,6 +113,7 @@ function renderOverall(status) {
   const badge = document.getElementById("overall-badge");
   const checkedAt = document.getElementById("checked-at");
   const subtitle = document.getElementById("overall-subtitle");
+  if (!section || !badge || !checkedAt || !subtitle) return;
 
   section.classList.remove("up", "down", "unknown");
   section.classList.add(status.overall === "up" ? "up" : "down");
@@ -127,10 +128,12 @@ function renderOverall(status) {
 
 function renderChecks(status, history) {
   const root = document.getElementById("checks");
-  root.innerHTML = "";
+  if (!root) return;
+  root.replaceChildren();
   const runs = getRuns(history);
+  const checks = Array.isArray(status?.checks) ? status.checks : [];
 
-  for (const check of status.checks) {
+  for (const check of checks) {
     const card = document.createElement("article");
     card.className = "card";
 
@@ -202,13 +205,20 @@ async function main() {
     renderChecks(status, history);
   } catch (err) {
     const section = document.getElementById("overall");
-    section.className = "overall down";
-    document.getElementById("overall-badge").textContent = "Status unavailable";
-    document.getElementById("overall-subtitle").textContent =
-      "Could not load status.json. The first workflow run may still be pending.";
-    document.getElementById("checked-at").textContent = String(err.message || err);
-    document.getElementById("checks").innerHTML =
-      `<div class="error-banner">${String(err.message || err)}</div>`;
+    if (section) section.className = "overall down";
+    const badge = document.getElementById("overall-badge");
+    if (badge) badge.textContent = "Status unavailable";
+    const subtitle = document.getElementById("overall-subtitle");
+    if (subtitle) {
+      subtitle.textContent =
+        "Could not load status.json. The first workflow run may still be pending.";
+    }
+    const checkedAt = document.getElementById("checked-at");
+    if (checkedAt) checkedAt.textContent = String(err.message || err);
+    const checks = document.getElementById("checks");
+    if (checks) {
+      checks.innerHTML = `<div class="error-banner">${String(err.message || err)}</div>`;
+    }
   }
 }
 
