@@ -192,37 +192,6 @@ function renderChecks(status, history) {
   }
 }
 
-function renderHistoryOverview(status, history) {
-  const root = document.getElementById("history");
-  root.innerHTML = "";
-  const runs = getRuns(history);
-
-  if (!runs.length) {
-    root.innerHTML = `<p class="muted">No history yet — website/API build every 5 minutes; Kaggle hourly.</p>`;
-    return;
-  }
-
-  const checks = status.checks?.length
-    ? status.checks
-    : [
-        { id: "website", name: "Website" },
-        { id: "api_ping", name: "API /ping" },
-        { id: "kaggle", name: "Kaggle dataset freshness" },
-      ];
-
-  for (const check of checks) {
-    const row = document.createElement("div");
-    row.className = "history-row";
-    const omitSkipped = check.id === "kaggle";
-    appendTimeline(
-      row,
-      checkSeries(runs, check.id, { omitSkipped }),
-      historyLabel(status, check.id, check.name)
-    );
-    root.append(row);
-  }
-}
-
 async function main() {
   try {
     const [status, history] = await Promise.all([
@@ -231,7 +200,6 @@ async function main() {
     ]);
     renderOverall(status);
     renderChecks(status, history);
-    renderHistoryOverview(status, history);
   } catch (err) {
     const section = document.getElementById("overall");
     section.className = "overall down";

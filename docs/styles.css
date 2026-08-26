@@ -181,40 +181,11 @@ a {
   word-break: break-word;
 }
 
-.history-section {
-  margin-top: 2rem;
-}
-
-.history-section h2 {
-  margin: 0 0 0.25rem;
-  font-size: 1.1rem;
-}
-
-.history-overview {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.history-row,
 .check-history {
   width: 100%;
-}
-
-.check-history {
   margin-top: 1rem;
   padding-top: 0.85rem;
   border-top: 1px solid var(--border);
-}
-
-.history-row .check-history {
-  margin-top: 0;
-  padding-top: 0;
-  border-top: none;
-  padding: 0.85rem 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
 }
 
 .check-history-meta {
