@@ -15,7 +15,7 @@ const STATUS_PATH = join(DOCS, "status.json");
 const HISTORY_PATH = join(DOCS, "history.json");
 const PREV_STATUS_PATH = join(DOCS, "status.json");
 
-const HISTORY_CAP = 288; // ~48h at 10-minute intervals
+const HISTORY_CAP = 1008; // ~7 days at 10-minute intervals
 const KAGGLE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 const CHECKS = {

@@ -14,7 +14,8 @@ Every 10 minutes, GitHub Actions (not the production host) verifies:
 | API ping | https://data.openisraelisupermarkets.co.il/ping | `{"message":"pong"}` |
 | Kaggle freshness | [israeli-supermarkets-2024](https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024) via Kaggle API | `lastUpdated` within 24 hours |
 
-Results are written to `status.json` / `history.json` and published via GitHub Pages. Discord is notified when checks fail or recover.
+Results are written to `status.json` / `history.json` and published via GitHub Pages.
+History keeps ~7 days of per-check samples (one bar per 10-minute run). Discord is notified when checks fail or recover.
 
 ## Secrets
 

@@ -190,20 +190,56 @@ a {
   font-size: 1.1rem;
 }
 
+.history-overview {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.history-row,
+.check-history {
+  width: 100%;
+}
+
+.check-history {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.history-row .check-history {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  padding: 0.85rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.check-history-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: baseline;
+  margin-bottom: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .history {
   display: flex;
-  gap: 3px;
-  align-items: flex-end;
-  height: 36px;
-  margin-top: 0.75rem;
+  gap: 2px;
+  align-items: stretch;
+  height: 28px;
   overflow-x: auto;
-  padding-bottom: 0.25rem;
+  padding-bottom: 0.15rem;
 }
 
 .bar {
-  flex: 1 0 4px;
-  min-width: 4px;
-  max-width: 10px;
+  flex: 1 0 3px;
+  min-width: 3px;
+  max-width: 8px;
   height: 100%;
   border-radius: 2px;
   background: var(--unknown);
@@ -215,6 +251,10 @@ a {
 
 .bar.down {
   background: var(--down);
+}
+
+.bar.unknown {
+  background: color-mix(in srgb, var(--unknown) 45%, transparent);
 }
 
 .footer {

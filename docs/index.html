@@ -30,9 +30,11 @@
       <section class="checks" id="checks" aria-label="Individual checks"></section>
 
       <section class="history-section" aria-label="Recent history">
-        <h2>Recent history</h2>
-        <p class="muted">Last ~48 hours (one bar per check run).</p>
-        <div id="history" class="history" role="img" aria-label="Status history timeline"></div>
+        <h2>Per-check history</h2>
+        <p class="muted">
+          Last 7 days · one bar per 10-minute check · green = up, red = down.
+        </p>
+        <div id="history" class="history-overview"></div>
       </section>
 
       <footer class="footer">
