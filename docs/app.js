@@ -27,16 +27,35 @@ function getRuns(history) {
   return history?.runs || (Array.isArray(history) ? history : []);
 }
 
-function checkSeries(runs, checkId) {
-  return runs.map((run) => {
+function checkSeries(runs, checkId, { omitSkipped = false } = {}) {
+  const series = runs.map((run) => {
     const entry = (run.checks || []).find((c) => c.id === checkId);
+    const skipped = !entry || entry.skipped || entry.ok === null || entry.ok === undefined;
+    if (omitSkipped && skipped) {
+      return null;
+    }
     return {
       checked_at: run.checked_at,
-      ok: entry ? !!entry.ok : null,
+      ok: skipped ? null : !!entry.ok,
+      skipped,
       latency_ms: entry?.latency_ms,
       last_updated: entry?.last_updated,
     };
   });
+  return omitSkipped ? series.filter(Boolean) : series;
+}
+
+function intervalLabel(status, checkId) {
+  const fromStatus = status?.intervals?.[checkId];
+  if (fromStatus === "5m") return "every 5 min";
+  if (fromStatus === "1h") return "hourly";
+  if (checkId === "kaggle") return "hourly";
+  return "every 5 min";
+}
+
+function historyLabel(status, checkId, name) {
+  const cadence = intervalLabel(status, checkId);
+  return name ? `${name} · ${cadence}` : `Last 7 days · ${cadence}`;
 }
 
 function uptimePct(series) {
@@ -130,9 +149,14 @@ function renderChecks(status, history) {
     const dl = document.createElement("dl");
     const rows = [
       ["Detail", check.detail || "—"],
+      ["Interval", intervalLabel(status, check.id)],
       ["HTTP", check.http_status ?? "—"],
       ["Latency", check.latency_ms != null ? `${check.latency_ms} ms` : "—"],
     ];
+
+    if (check.checked_at) {
+      rows.push(["Last probed", fmtTime(check.checked_at)]);
+    }
 
     if (check.url) {
       rows.push([
@@ -158,7 +182,12 @@ function renderChecks(status, history) {
     }
 
     card.append(head, dl);
-    appendTimeline(card, checkSeries(runs, check.id), "Last 7 days");
+    const omitSkipped = check.id === "kaggle";
+    appendTimeline(
+      card,
+      checkSeries(runs, check.id, { omitSkipped }),
+      historyLabel(status, check.id, "Last 7 days")
+    );
     root.append(card);
   }
 }
@@ -169,7 +198,7 @@ function renderHistoryOverview(status, history) {
   const runs = getRuns(history);
 
   if (!runs.length) {
-    root.innerHTML = `<p class="muted">No history yet — it builds as checks run every 10 minutes.</p>`;
+    root.innerHTML = `<p class="muted">No history yet — website/API build every 5 minutes; Kaggle hourly.</p>`;
     return;
   }
 
@@ -184,7 +213,12 @@ function renderHistoryOverview(status, history) {
   for (const check of checks) {
     const row = document.createElement("div");
     row.className = "history-row";
-    appendTimeline(row, checkSeries(runs, check.id), check.name);
+    const omitSkipped = check.id === "kaggle";
+    appendTimeline(
+      row,
+      checkSeries(runs, check.id, { omitSkipped }),
+      historyLabel(status, check.id, check.name)
+    );
     root.append(row);
   }
 }

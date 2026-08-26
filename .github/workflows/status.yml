@@ -2,8 +2,8 @@ name: Status checks
 
 on:
   schedule:
-    # Every 10 minutes
-    - cron: "*/10 * * * *"
+    # Website + API every 5 minutes; Kaggle runs about once per hour inside the script
+    - cron: "*/5 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
@@ -59,6 +59,8 @@ jobs:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # Always include Kaggle on manual/push runs; schedule uses hourly gating in script
+          FORCE_KAGGLE: ${{ github.event_name != 'schedule' && '1' || '' }}
         run: node scripts/check.mjs
 
       - name: Setup Pages

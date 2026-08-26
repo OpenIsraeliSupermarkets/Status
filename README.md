@@ -6,16 +6,16 @@ Public status page for the Open Israeli Supermarkets project.
 
 ## What is checked
 
-Every 10 minutes, GitHub Actions (not the production host) verifies:
+GitHub Actions (not the production host) verifies:
 
-| Check | Target | Pass condition |
-|-------|--------|----------------|
-| Website | https://www.openisraelisupermarkets.co.il/ | HTTP 200 |
-| API ping | https://data.openisraelisupermarkets.co.il/ping | `{"message":"pong"}` |
-| Kaggle freshness | [israeli-supermarkets-2024](https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024) via Kaggle API | `lastUpdated` within 24 hours |
+| Check | Interval | Target | Pass condition |
+|-------|----------|--------|----------------|
+| Website | every 5 minutes | https://www.openisraelisupermarkets.co.il/ | HTTP 200 |
+| API ping | every 5 minutes | https://data.openisraelisupermarkets.co.il/ping | `{"message":"pong"}` |
+| Kaggle freshness | every ~1 hour | [israeli-supermarkets-2024](https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024) via Kaggle API | `lastUpdated` within 24 hours |
 
 Results are written to `status.json` / `history.json` and published via GitHub Pages.
-History keeps ~7 days of per-check samples (one bar per 10-minute run). Discord is notified when checks fail or recover.
+History keeps ~7 days of samples. Website/API bars are 5-minute; Kaggle bars are hourly. Discord is notified when checks fail or recover.
 
 ## Secrets
 

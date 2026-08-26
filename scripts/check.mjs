@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Public surface checks for Open Israeli Supermarkets.
+ * Website + API every run (workflow ~5 min); Kaggle about once per hour.
  * Writes docs/status.json and appends to docs/history.json (capped).
  */
 
@@ -15,8 +16,9 @@ const STATUS_PATH = join(DOCS, "status.json");
 const HISTORY_PATH = join(DOCS, "history.json");
 const PREV_STATUS_PATH = join(DOCS, "status.json");
 
-const HISTORY_CAP = 1008; // ~7 days at 10-minute intervals
+const HISTORY_CAP = 2016; // ~7 days at 5-minute intervals
 const KAGGLE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const KAGGLE_CHECK_INTERVAL_MS = 55 * 60 * 1000; // slightly under 1h for cron drift
 
 const CHECKS = {
   website: {
@@ -236,6 +238,53 @@ function loadHistory() {
   }
 }
 
+function previousKaggle(previous) {
+  return previous?.checks?.find((c) => c.id === "kaggle") || null;
+}
+
+function shouldRunKaggle(previous) {
+  if (process.env.SKIP_KAGGLE === "1") return false;
+  if (process.env.FORCE_KAGGLE === "1") return true;
+
+  // Hourly slot among */5 runs (UTC minute 0–4)
+  if (new Date().getUTCMinutes() < 5) return true;
+
+  const prev = previousKaggle(previous);
+  if (!prev || prev.skipped) return true;
+  const checkedAt = prev.checked_at || previous?.checked_at;
+  if (!checkedAt) return true;
+  const age = Date.now() - Date.parse(checkedAt);
+  return Number.isNaN(age) || age >= KAGGLE_CHECK_INTERVAL_MS;
+}
+
+function carryForwardKaggle(previous, checked_at) {
+  const prev = previousKaggle(previous);
+  const meta = CHECKS.kaggle;
+  if (!prev || typeof prev.ok !== "boolean") {
+    return {
+      id: meta.id,
+      name: meta.name,
+      url: "https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024",
+      ok: false,
+      http_status: null,
+      latency_ms: 0,
+      last_updated: null,
+      checked_at,
+      skipped: true,
+      detail: "No prior Kaggle result to reuse",
+    };
+  }
+
+  return {
+    ...prev,
+    id: meta.id,
+    name: meta.name,
+    url: prev.url || "https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024",
+    skipped: true,
+    detail: `${prev.detail || "Cached result"} (hourly check; last run ${prev.checked_at || previous?.checked_at || "unknown"})`,
+  };
+}
+
 async function notifyDiscord(status, previous) {
   const webhook = process.env.DISCORD_WEBHOOK_URL;
   if (!webhook) {
@@ -249,7 +298,7 @@ async function notifyDiscord(status, previous) {
   const recovered = nowOverall === "up" && prevOverall === "down";
   const newlyDown = nowOverall === "down" && prevOverall !== "down";
 
-  // Only notify on transition (new failure or recovery), not every 10 minutes while down
+  // Only notify on transition (new failure or recovery)
   if (!newlyDown && !recovered) return;
 
   let content;
@@ -277,16 +326,27 @@ async function main() {
 
   const previous = loadPreviousStatus();
   const checked_at = new Date().toISOString();
+  const runKaggle = shouldRunKaggle(previous);
 
-  console.log(`Running checks at ${checked_at}...`);
-  const [website, api_ping, kaggle] = await Promise.all([
-    checkWebsite(),
-    checkApiPing(),
-    checkKaggle(),
-  ]);
+  console.log(`Running checks at ${checked_at} (kaggle=${runKaggle ? "yes" : "skip"})...`);
+
+  const [website, api_ping] = await Promise.all([checkWebsite(), checkApiPing()]);
+  website.checked_at = checked_at;
+  api_ping.checked_at = checked_at;
+
+  let kaggle;
+  if (runKaggle) {
+    kaggle = await checkKaggle();
+    kaggle.checked_at = checked_at;
+    kaggle.skipped = false;
+  } else {
+    kaggle = carryForwardKaggle(previous, checked_at);
+    console.log(`  SKIP Kaggle dataset freshness: using cached result`);
+  }
 
   const checks = [website, api_ping, kaggle];
   for (const c of checks) {
+    if (c.skipped) continue;
     console.log(`  ${c.ok ? "OK" : "FAIL"} ${c.name}: ${c.detail}`);
   }
 
@@ -294,6 +354,11 @@ async function main() {
   const status = {
     overall,
     checked_at,
+    intervals: {
+      website: "5m",
+      api_ping: "5m",
+      kaggle: "1h",
+    },
     checks,
     pages_url: "https://openisraelisupermarkets.github.io/Status/",
     repo: "https://github.com/OpenIsraeliSupermarkets/status",
@@ -307,8 +372,9 @@ async function main() {
     overall,
     checks: checks.map((c) => ({
       id: c.id,
-      ok: c.ok,
-      latency_ms: c.latency_ms,
+      ok: c.skipped ? null : c.ok,
+      skipped: !!c.skipped,
+      latency_ms: c.skipped ? undefined : c.latency_ms,
       last_updated: c.last_updated ?? undefined,
     })),
   });
@@ -317,7 +383,6 @@ async function main() {
 
   await notifyDiscord(status, previous);
 
-  // Non-zero exit so the workflow can mark the job as failed while still deploying Pages
   if (overall === "down") {
     console.error("One or more checks failed");
     process.exitCode = 1;
