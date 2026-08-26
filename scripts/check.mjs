@@ -257,7 +257,7 @@ async function notifyDiscord(status, previous) {
     content = "✅ **Open Israeli Supermarkets — recovered**\nAll checks are passing again.";
   } else {
     const lines = failed.map((c) => `• **${c.name}**: ${c.detail}`).join("\n");
-    content = `🔴 **Open Israeli Supermarkets — degraded**\n${lines}\n\nStatus: https://openisraelisupermarkets.github.io/status/`;
+    content = `🔴 **Open Israeli Supermarkets — degraded**\n${lines}\n\nStatus: https://openisraelisupermarkets.github.io/Status/`;
   }
 
   const res = await fetch(webhook, {
@@ -295,7 +295,7 @@ async function main() {
     overall,
     checked_at,
     checks,
-    pages_url: "https://openisraelisupermarkets.github.io/status/",
+    pages_url: "https://openisraelisupermarkets.github.io/Status/",
     repo: "https://github.com/OpenIsraeliSupermarkets/status",
   };
 

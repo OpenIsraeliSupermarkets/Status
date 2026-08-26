@@ -2,7 +2,7 @@
 
 Public status page for the Open Israeli Supermarkets project.
 
-**Live page:** https://openisraelisupermarkets.github.io/status/
+**Live page:** https://openisraelisupermarkets.github.io/Status/
 
 ## What is checked
 

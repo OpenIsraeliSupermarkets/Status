@@ -43,11 +43,11 @@ jobs:
           set -euo pipefail
           mkdir -p docs
           # Prefer committed docs/*; also try live Pages so history accumulates across runs
-          if curl -fsSL "https://openisraelisupermarkets.github.io/status/status.json" -o /tmp/prev-status.json; then
+          if curl -fsSL "https://openisraelisupermarkets.github.io/Status/status.json" -o /tmp/prev-status.json; then
             cp /tmp/prev-status.json docs/status.json
             echo "Restored status.json from live Pages"
           fi
-          if curl -fsSL "https://openisraelisupermarkets.github.io/status/history.json" -o /tmp/prev-history.json; then
+          if curl -fsSL "https://openisraelisupermarkets.github.io/Status/history.json" -o /tmp/prev-history.json; then
             cp /tmp/prev-history.json docs/history.json
             echo "Restored history.json from live Pages"
           fi
