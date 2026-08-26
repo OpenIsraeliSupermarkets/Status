@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Public status for Open Israeli Supermarkets" />
+    <title>Open Israeli Supermarkets — Status</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="header">
+        <p class="eyebrow">Open Israeli Supermarkets</p>
+        <h1>System status</h1>
+        <p id="overall-subtitle" class="subtitle">Loading latest checks…</p>
+      </header>
+
+      <section id="overall" class="overall unknown" aria-live="polite">
+        <div class="overall-badge" id="overall-badge">…</div>
+        <div class="overall-meta">
+          <p id="checked-at">—</p>
+          <p class="muted">
+            Checks run every 10 minutes from
+            <a href="https://github.com/OpenIsraeliSupermarkets/status/actions">GitHub Actions</a>
+            (not the production host).
+          </p>
+        </div>
+      </section>
+
+      <section class="checks" id="checks" aria-label="Individual checks"></section>
+
+      <section class="history-section" aria-label="Recent history">
+        <h2>Recent history</h2>
+        <p class="muted">Last ~48 hours (one bar per check run).</p>
+        <div id="history" class="history" role="img" aria-label="Status history timeline"></div>
+      </section>
+
+      <footer class="footer">
+        <a href="https://www.openisraelisupermarkets.co.il/">Website</a>
+        ·
+        <a href="https://data.openisraelisupermarkets.co.il/docs">API docs</a>
+        ·
+        <a href="https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024">Kaggle dataset</a>
+        ·
+        <a href="https://github.com/OpenIsraeliSupermarkets/status">Source</a>
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

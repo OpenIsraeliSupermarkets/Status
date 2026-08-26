@@ -1,0 +1,80 @@
+name: Status checks
+
+on:
+  schedule:
+    # Every 10 minutes
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - "docs/**"
+      - ".github/workflows/status.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  check-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Restore previous status artifacts from Pages
+        id: restore
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          mkdir -p docs
+          # Prefer committed docs/*; also try live Pages so history accumulates across runs
+          if curl -fsSL "https://openisraelisupermarkets.github.io/status/status.json" -o /tmp/prev-status.json; then
+            cp /tmp/prev-status.json docs/status.json
+            echo "Restored status.json from live Pages"
+          fi
+          if curl -fsSL "https://openisraelisupermarkets.github.io/status/history.json" -o /tmp/prev-history.json; then
+            cp /tmp/prev-history.json docs/history.json
+            echo "Restored history.json from live Pages"
+          fi
+
+      - name: Run public checks
+        id: checks
+        continue-on-error: true
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: node scripts/check.mjs
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Fail job if checks failed
+        if: steps.checks.outcome == 'failure'
+        run: |
+          echo "One or more public checks failed (Pages still deployed)."
+          exit 1

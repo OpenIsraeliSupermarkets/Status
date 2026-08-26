@@ -1,0 +1,36 @@
+{
+  "overall": "up",
+  "checked_at": "2026-08-26T12:34:12.957Z",
+  "checks": [
+    {
+      "id": "website",
+      "name": "Website",
+      "url": "https://www.openisraelisupermarkets.co.il/",
+      "ok": true,
+      "http_status": 200,
+      "latency_ms": 67,
+      "detail": "HTTP 200"
+    },
+    {
+      "id": "api_ping",
+      "name": "API /ping",
+      "url": "https://data.openisraelisupermarkets.co.il/ping",
+      "ok": true,
+      "http_status": 200,
+      "latency_ms": 110,
+      "detail": "message=\"pong\""
+    },
+    {
+      "id": "kaggle",
+      "name": "Kaggle dataset freshness",
+      "url": "https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024",
+      "ok": true,
+      "http_status": 200,
+      "latency_ms": 350,
+      "last_updated": "2026-08-25T22:31:26.777Z",
+      "detail": "Updated 14.0h ago (within 24h)"
+    }
+  ],
+  "pages_url": "https://openisraelisupermarkets.github.io/status/",
+  "repo": "https://github.com/OpenIsraeliSupermarkets/status"
+}
